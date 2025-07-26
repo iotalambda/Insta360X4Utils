@@ -46,7 +46,7 @@ var gpsInfos = new Dictionary<int, GpsInfo>();
 static ReadOnlySpan<char> GetValue(ReadOnlySpan<char> source)
 {
     var spaceIx = source.IndexOf(' ');
-    var value = source.Slice(spaceIx + 1);
+    var value = source[(spaceIx + 1)..];
     value = value.TrimStart('"').TrimEnd("\",");
     return value;
 }
@@ -54,7 +54,7 @@ static ReadOnlySpan<char> GetValue(ReadOnlySpan<char> source)
 static int GetCopyIx(ReadOnlySpan<char> source)
 {
     var colonIx = source.IndexOf(':');
-    var numberStr = source.Slice(4, colonIx - 4);
+    var numberStr = source[4..colonIx];
     var ix = int.Parse(numberStr);
     return ix;
 }
@@ -87,7 +87,7 @@ foreach (var line in outputSpan.EnumerateLines())
         continue;
 
     var trimmedLine = line.TrimStart(' ');
-    var sndQuoteIx = trimmedLine.Slice(1).IndexOf('"');
+    var sndQuoteIx = trimmedLine[1..].IndexOf('"');
     var propertyKey = trimmedLine.Slice(1, sndQuoteIx);
     if (startDateTime == null && propertyKey.SequenceEqual(":CreateDate"))
     {
@@ -126,7 +126,7 @@ foreach (var line in outputSpan.EnumerateLines())
             var copyIx = GetCopyIx(propertyKey);
             var value = GetValue(trimmedLine);
             var spaceIx = value.IndexOf(' ');
-            var altStr = value.Slice(0, spaceIx);
+            var altStr = value[..spaceIx];
             var alt = decimal.Parse(altStr, CultureInfo.InvariantCulture);
             if (gpsInfos.TryGetValue(copyIx, out var gpsInfo))
                 gpsInfo.Alt = alt;
