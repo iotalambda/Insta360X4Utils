@@ -162,20 +162,29 @@ foreach (var (_, gpsInfo) in gpsInfos)
 //    Console.WriteLine($"{gpsInfo.Lon} {gpsInfo.Lat} {gpsInfo.Alt} -> {gpsInfo.AccDuration}");
 //}
 
+var minLon = dedupedGpsInfos.Min(x => x.Lon);
+var minLat = dedupedGpsInfos.Min(x => x.Lat);
+var maxLon = dedupedGpsInfos.Max(x => x.Lon);
+var maxLat = dedupedGpsInfos.Max(x => x.Lat);
+
 var gpx = new StringBuilder();
-gpx.AppendLine("<gpx xmlns=\"http://www.topografix.com/GPX/1/1\" xmlns:gpxx=\"http://www.garmin.com/xmlschemas/GpxExtensions/v3\" xmlns:gpxtpx=\"http://www.garmin.com/xmlschemas/TrackPointExtension/v1\" creator=\"Oregon 400t\" version=\"1.1\" xmlns:xsi=\"http://www.w3.org/2001/XMLSchema-instance\" xsi:schemaLocation=\"http://www.topografix.com/GPX/1/1 http://www.topografix.com/GPX/1/1/gpx.xsd http://www.garmin.com/xmlschemas/GpxExtensions/v3 http://www.garmin.com/xmlschemas/GpxExtensionsv3.xsd http://www.garmin.com/xmlschemas/TrackPointExtension/v1 http://www.garmin.com/xmlschemas/TrackPointExtensionv1.xsd\">");
-gpx.AppendLine("  <trk>");
-gpx.AppendLine("    <trkseg>");
+gpx.AppendLine($"<?xml version=\"1.0\" encoding=\"UTF-8\"?>");
+gpx.AppendLine($"<gpx xmlns=\"http://www.topografix.com/GPX/1/1\" creator=\"Insta360 Studio\" version=\"1.1\">");
+gpx.AppendLine($"  <metadata>");
+gpx.AppendLine($"    <bounds minlat=\"{minLat!.Value.ToString(CultureInfo.InvariantCulture)}\" minlon=\"{minLon!.Value.ToString(CultureInfo.InvariantCulture)}\" maxlon=\"{maxLon!.Value.ToString(CultureInfo.InvariantCulture)}\" maxlat=\"{maxLat!.Value.ToString(CultureInfo.InvariantCulture)}\"/>");
+gpx.AppendLine($"  </metadata>");
+gpx.AppendLine($"  <trk>");
+gpx.AppendLine($"    <trkseq>");
 foreach (var gpsInfo in dedupedGpsInfos)
 {
     gpx.AppendLine($"      <trkpt lat=\"{gpsInfo.Lat!.Value.ToString(CultureInfo.InvariantCulture)}\" lon=\"{gpsInfo.Lon!.Value.ToString(CultureInfo.InvariantCulture)}\">");
-    gpx.AppendLine($"        <ele>{gpsInfo.Alt!.Value.ToString(CultureInfo.InvariantCulture)}</ele>");
-    gpx.AppendLine($"        <time>{startDateTime!.Value.Add(gpsInfo.AccDuration).ToString("yyyy-MM-dd HH:mm:ss", CultureInfo.InvariantCulture)}</time>");
+    gpx.AppendLine($"        <ele>{gpsInfo.Alt!.Value.ToString("0.0", CultureInfo.InvariantCulture)}</ele>");
+    gpx.AppendLine($"        <time>{startDateTime!.Value.Add(gpsInfo.AccDuration).ToString("yyyy-MM-ddTHH:mm:ssZ", CultureInfo.InvariantCulture)}</time>");
     gpx.AppendLine($"      </trkpt>");
 }
-gpx.AppendLine("    </trkseq>");
-gpx.AppendLine("  </trk>");
-gpx.AppendLine("</gpx>");
+gpx.AppendLine($"    </trkseq>");
+gpx.AppendLine($"  </trk>");
+gpx.AppendLine($"</gpx>");
 File.WriteAllText(outputFilePath, gpx.ToString());
 
 class GpsInfo
